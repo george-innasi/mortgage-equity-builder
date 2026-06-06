@@ -6,23 +6,24 @@
 <title>Visual Mortgage Calculator</title>
 <style>
   :root{
-    --bg:#f4f3ec; --card:#ffffff; --ink:#1d2b36; --heading:#142028; --muted:#6b7a82; --line:#e8ebe3;
+    /* dark theme */
+    --bg:#1c2027; --card:#15181c; --ink:#e7eaed; --heading:#ffffff; --muted:#99a2ab; --line:#2b3038;
     /* neutral slate for UI chrome (buttons, focus) — kept distinct from feature + dashboard colors */
-    --accent:#4a5963; --accent-soft:#eceff1;
+    --accent:#5b6b76; --accent-soft:#232a31;
     /* pastel palette (from theme) */
     --peach:#F8CA9D; --teal:#8EC9BB; --sage:#C5D7C0; --coral:#FB8E7E; --yellow:#F2CF59; --orange:#FA6E4F;
     --grey:#cfd6cf;
     /* HOUSE: one palette colour per feature (base→rapid→additional→lump) */
     --eq1:#F8CA9D; --eq2:#8EC9BB; --eq3:#F2CF59; --eq4:#FB8E7E;
-    /* DASHBOARD outcome colours — deeper tones, deliberately different from the house */
-    --pos:#1f7a5e; --pos-bg:#e6f2ec; --pos-line:#c5e3d6;
-    --cost:#b8492f; --cost-bg:#fae9e3; --cost-line:#f1c9bd;
-    --shadow:0 1px 2px rgba(20,32,40,.04),0 10px 28px rgba(20,32,40,.07);
+    /* DASHBOARD outcome colours — brightened for dark bg, deliberately different from the house */
+    --pos:#48c98e; --pos-bg:#15291f; --pos-line:#2d4838;
+    --cost:#ff7d63; --cost-bg:#2c1713; --cost-line:#4d2a22;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.45);
     --radius:18px;
   }
   *{box-sizing:border-box}
   body{margin:0;color:var(--ink);
-    background:linear-gradient(165deg,#f6f3ea 0%,#eef3ee 55%,#e8f0ec 100%);background-attachment:fixed;min-height:100vh;
+    background:linear-gradient(165deg,#000000 0%,#0d1014 55%,#000000 100%);background-attachment:fixed;min-height:100vh;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     line-height:1.45;-webkit-font-smoothing:antialiased;padding:28px 18px 60px}
   .wrap{max-width:1080px;margin:0 auto}
@@ -59,11 +60,11 @@
   .field{margin-bottom:14px}
   label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
   input[type=number],select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;
-    font-size:14px;color:var(--ink);background:#fff;outline:none}
+    font-size:14px;color:var(--ink);background:var(--bg);outline:none}
   input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .seg{display:flex;gap:6px}
-  .seg button{flex:1;padding:8px;border:1px solid var(--line);background:#fff;border-radius:9px;
+  .seg button{flex:1;padding:8px;border:1px solid var(--line);background:var(--bg);border-radius:9px;
     font-size:12px;color:var(--muted);cursor:pointer;font-weight:600}
   .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .out{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line);font-size:13px}
@@ -97,11 +98,11 @@
     justify-content:flex-end;padding-right:10px;color:#fff;font-size:11px;font-weight:700;white-space:nowrap;transition:width .35s ease}
   .seg-saved{height:100%;background:repeating-linear-gradient(45deg,var(--pos),var(--pos) 6px,#2f9576 6px,#2f9576 12px);
     display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;white-space:nowrap;transition:width .35s ease}
-  .tlTip{position:absolute;bottom:130%;transform:translateX(-50%);background:var(--ink);color:#fff;
+  .tlTip{position:absolute;bottom:130%;transform:translateX(-50%);background:#2b3138;color:#fff;border:1px solid #3a4148;
     padding:5px 9px;border-radius:8px;font-size:11.5px;font-weight:600;white-space:nowrap;
     opacity:0;pointer-events:none;transition:opacity .15s}
   .tlTip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);
-    border:5px solid transparent;border-top-color:var(--ink)}
+    border:5px solid transparent;border-top-color:#2b3138}
   .track2:hover + .tlTip{opacity:1}
   .tlScale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:5px}
 </style>
