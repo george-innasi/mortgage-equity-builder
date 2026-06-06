@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visual Mortgage Calculator</title>
+<style>
+  :root{
+    --bg:#f4f3ec; --card:#ffffff; --ink:#1d2b36; --heading:#142028; --muted:#6b7a82; --line:#e8ebe3;
+    /* neutral slate for UI chrome (buttons, focus) — kept distinct from feature + dashboard colors */
+    --accent:#4a5963; --accent-soft:#eceff1;
+    /* pastel palette (from theme) */
+    --peach:#F8CA9D; --teal:#8EC9BB; --sage:#C5D7C0; --coral:#FB8E7E; --yellow:#F2CF59; --orange:#FA6E4F;
+    --grey:#cfd6cf;
+    /* HOUSE: one palette colour per feature (base→rapid→additional→lump) */
+    --eq1:#F8CA9D; --eq2:#8EC9BB; --eq3:#F2CF59; --eq4:#FB8E7E;
+    /* DASHBOARD outcome colours — deeper tones, deliberately different from the house */
+    --pos:#1f7a5e; --pos-bg:#e6f2ec; --pos-line:#c5e3d6;
+    --cost:#b8492f; --cost-bg:#fae9e3; --cost-line:#f1c9bd;
+    --shadow:0 1px 2px rgba(20,32,40,.04),0 10px 28px rgba(20,32,40,.07);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--ink);
+    background:linear-gradient(165deg,#f6f3ea 0%,#eef3ee 55%,#e8f0ec 100%);background-attachment:fixed;min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;-webkit-font-smoothing:antialiased;padding:28px 18px 60px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:25px;margin:0 0 2px;letter-spacing:-.02em;color:var(--heading);font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+  .topgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+  @media(max-width:860px){.topgrid{grid-template-columns:1fr}}
+  .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--heading);
+    margin:0 0 14px;font-weight:800}
+  /* hero */
+  .hero{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:center}
+  @media(max-width:680px){.hero{grid-template-columns:1fr}}
+  .houseWrap{text-align:center}
+  .ownLine{font-size:13px;color:var(--muted);margin-top:6px}
+  .ownLine b{color:var(--ink)}
+  .headline{font-size:13px;color:var(--muted);margin:0 0 2px}
+  .bigYear{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0 0 16px;color:var(--heading)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .stat{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .stat .v{font-size:18px;font-weight:700;margin-top:3px}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:14px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .timeline{margin-top:16px}
+  .barlbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin:8px 0 3px}
+  .track{height:9px;background:var(--bg);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .fill{height:100%;border-radius:99px}
+  /* inputs */
+  .field{margin-bottom:14px}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+  input[type=number],select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;
+    font-size:14px;color:var(--ink);background:#fff;outline:none}
+  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .seg{display:flex;gap:6px}
+  .seg button{flex:1;padding:8px;border:1px solid var(--line);background:#fff;border-radius:9px;
+    font-size:12px;color:var(--muted);cursor:pointer;font-weight:600}
+  .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .out{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line);font-size:13px}
+  .out:first-of-type{border-top:none}
+  .out b{font-weight:700}
+  .meter{height:8px;background:var(--bg);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-top:6px}
+  .meter>div{height:100%;background:var(--accent)}
+  .warn{color:var(--cost);font-size:11.5px;margin-top:6px;display:none}
+  .warn.show{display:block}
+  .hint{font-size:11px;color:var(--muted);margin-top:4px}
+  .fdot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;vertical-align:middle}
+  .note{font-size:11px;color:var(--muted);margin-top:18px;line-height:1.5}
+  @media(min-width:680px){.stats4{grid-template-columns:repeat(4,1fr)}}
+  .stats3{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+  .ministat{border:none;background:transparent;color:inherit;font:inherit;cursor:pointer;
+    -webkit-appearance:none;appearance:none;padding:0 14px 0 1px;margin:0;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" fill="none" stroke="%232f8f74" stroke-width="1.6"/></svg>');
+    background-repeat:no-repeat;background-position:right center}
+  .ministat:focus{outline:none;text-decoration:underline}
+  .stat-pos .k{color:var(--pos)}
+  /* tinted stats */
+  .stat-pos{background:var(--pos-bg);border-color:var(--pos-line)}
+  .stat-pos .v{color:var(--pos)}
+  .stat-cost{background:var(--cost-bg);border-color:var(--cost-line)}
+  .stat-cost .v{color:var(--cost)}
+  /* merged timeline bar */
+  .tlWrap{position:relative;margin-top:8px}
+  .track2{position:relative;display:flex;height:28px;background:var(--bg);
+    border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .seg-plan{height:100%;background:#5b6b73;display:flex;align-items:center;
+    justify-content:flex-end;padding-right:10px;color:#fff;font-size:11px;font-weight:700;white-space:nowrap;transition:width .35s ease}
+  .seg-saved{height:100%;background:repeating-linear-gradient(45deg,var(--pos),var(--pos) 6px,#2f9576 6px,#2f9576 12px);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;white-space:nowrap;transition:width .35s ease}
+  .tlTip{position:absolute;bottom:130%;transform:translateX(-50%);background:var(--ink);color:#fff;
+    padding:5px 9px;border-radius:8px;font-size:11.5px;font-weight:600;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity .15s}
+  .tlTip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:var(--ink)}
+  .track2:hover + .tlTip{opacity:1}
+  .tlScale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Visual Mortgage Calculator</h1>
+  <p class="sub">Watch your home fill in as you build equity — and see how rapid payments, bigger payments, and lump sums get you mortgage-free faster.</p>
+
+  <!-- TOP ROW: HOME (left) + MORTGAGE OVERVIEW (right) -->
+  <div class="topgrid">
+  <div class="card" style="text-align:center;display:flex;flex-direction:column;justify-content:center">
+    <svg id="house" viewBox="0 0 560 380" width="100%" style="max-width:560px;margin:0 auto"></svg>
+    <div class="ownLine"><b id="ownPct">0%</b> owned by <b id="ownYear">—</b></div>
+    <div class="legend" style="justify-content:center">
+      <span><i class="dot" style="background:var(--eq1)"></i>On schedule</span>
+      <span><i class="dot" style="background:var(--eq2)"></i>Rapid payments</span>
+      <span><i class="dot" style="background:var(--eq3)"></i>Additional payments</span>
+      <span><i class="dot" style="background:var(--eq4)"></i>Lump sums</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Mortgage overview</h2>
+    <p class="headline">Fully owned by</p>
+    <p class="bigYear"><span id="payoffYear">—</span> <span style="font-size:15px;color:var(--muted);font-weight:500">(<span id="payoffIn">—</span>)</span></p>
+    <div class="stats stats3">
+      <div class="stat stat-pos"><div class="k">Time saved</div><div class="v" id="timeSaved">—</div></div>
+      <div class="stat stat-pos">
+        <div class="k">Interest saved <select id="intSel" class="ministat">
+          <option value="year1">year 1</option>
+          <option value="term">over term</option>
+          <option value="life" selected>over life</option>
+        </select></div>
+        <div class="v" id="intSaved">—</div>
+      </div>
+      <div class="stat stat-cost"><div class="k">Total interest Paid (life)</div><div class="v" id="totInt">—</div></div>
+    </div>
+    <div class="timeline">
+      <div class="barlbl"><span>Mortgage free timeline</span><span id="planYrs">—</span></div>
+      <div class="tlWrap">
+        <div class="track2">
+          <div class="seg-plan" id="planSeg"></div>
+          <div class="seg-saved" id="savedSeg"></div>
+        </div>
+        <div class="tlTip" id="tlTip">—</div>
+      </div>
+      <div class="tlScale"><span>now</span><span id="baseEndLbl">baseline payoff</span></div>
+    </div>
+  </div>
+  </div><!-- /topgrid -->
+
+  <!-- CALCULATOR (left) + PAYMENTS (right), below -->
+  <div class="grid">
+    <!-- INPUTS -->
+    <div class="card">
+      <h2>Your mortgage details</h2>
+      <div class="row">
+        <div class="field"><label>Mortgage balance ($)</label><input type="number" id="bal" value="450000" min="0" step="1000"></div>
+        <div class="field"><label>Interest rate (%)</label><input type="number" id="rate" value="4.84" min="0" step="0.01"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Amortization (years)</label><input type="number" id="amort" value="25" min="1" step="1"></div>
+        <div class="field"><label>Term (years)</label><input type="number" id="term" value="5" min="1" step="1"></div>
+      </div>
+      <div class="field"><label><i class="fdot" style="background:var(--eq2)"></i>Payment frequency <span style="color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0">· accelerated = rapid payments</span></label>
+        <select id="freq">
+          <option value="monthly">Monthly</option>
+          <option value="semimonthly">Semi-monthly</option>
+          <option value="biweekly">Bi-weekly</option>
+          <option value="weekly">Weekly</option>
+          <option value="accelbi">Accelerated bi-weekly</option>
+          <option value="accelwk">Accelerated weekly</option>
+        </select>
+      </div>
+      <div class="out"><span><i class="fdot" style="background:var(--eq1)"></i>Regular payment <span id="oRegFreq" style="color:var(--muted);font-weight:600">(Mthly)</span></span><b id="oReg">—</b></div>
+      <div class="out"><span>Balance after term</span><b id="oTerm">—</b></div>
+    </div>
+
+    <!-- PREPAYMENTS -->
+    <div class="card">
+      <h2>Prepayment levers</h2>
+
+      <div class="field"><label><i class="fdot" style="background:var(--eq4)"></i>Lump-sum prepayment ($)</label><input type="number" id="lump" value="0" min="0" step="500"></div>
+      <div class="field"><label>Lump frequency</label>
+        <div class="seg" id="lumpFreqSeg">
+          <button data-v="now" class="on">Now (once)</button>
+          <button data-v="monthly">Monthly</button>
+          <button data-v="annually">Annually</button>
+        </div>
+      </div>
+      <div class="field"><label>Annual privilege cap</label>
+        <div class="seg" id="capSeg">
+          <button data-v="10">10%</button>
+          <button data-v="15" class="on">15%</button>
+          <button data-v="20">20%</button>
+        </div>
+        <div class="warn" id="capWarn"></div>
+      </div>
+
+      <div class="field" style="margin-top:18px"><label><i class="fdot" style="background:var(--eq3)"></i>Increase each payment</label>
+        <div class="row">
+          <input type="number" id="inc" value="0" min="0" step="25">
+          <div class="seg" id="incModeSeg">
+            <button data-v="dollar" class="on">$</button>
+            <button data-v="pct">%</button>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>Payment-increase privilege (max +100%)</label>
+        <div class="meter"><div id="incMeter" style="width:0%"></div></div>
+        <div class="warn" id="incWarn">Past the typical +100% doubling ceiling — lenders vary.</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Canadian fixed-rate math (compounds semi-annually, not in advance). Privilege caps and the +100% ceiling are representative defaults and vary by lender. Colour attribution between levers is sequential (schedule → rapid → bigger payment → lump); the totals are exact, only the split between colours depends on stacking order. The house fills toward 100% (full journey to mortgage-free); the snapshot shown is your equity at the end of the selected term. Concept prototype — not financial advice.</p>
+</div>
+
+<script>
+/* ---------- portable engine ---------- */
+function periodic(j,m){return Math.pow(1+j/2,2/m)-1;}
+function freqInfo(f){
+  var map={monthly:[12,false,1],semimonthly:[24,false,1],biweekly:[26,false,1],weekly:[52,false,1],accelbi:[26,true,2],accelwk:[52,true,4]};
+  var a=map[f]||map.monthly; return {m:a[0],accel:a[1],div:a[2]};
+}
+function regPayment(bal,j,amortY,f){
+  var fi=freqInfo(f);
+  if(fi.accel){var i12=periodic(j,12),n12=amortY*12;var mo=(i12===0)?bal/n12:bal*i12/(1-Math.pow(1+i12,-n12));return mo/fi.div;}
+  var i=periodic(j,fi.m),n=amortY*fi.m;
+  return (i===0)?bal/n:bal*i/(1-Math.pow(1+i,-n));
+}
+function sim(o){
+  var fi=freqInfo(o.freq),m=fi.m,i=periodic(o.rate,m);
+  var reg=regPayment(o.bal,o.rate,o.amort,o.freq);
+  var pay=o.incMode==="dollar"?reg+o.incVal:reg*(1+o.incVal/100);
+  var bal=o.bal,p=0,ti=0,ti1=0,tiTerm=0,balAtTerm=null;
+  var termP=o.term*m,monthEvery=Math.max(1,Math.round(m/12));
+  if(o.lumpFreq==="now") bal-=o.lump;
+  while(bal>0.01 && p<7000){
+    p++;
+    if(o.lumpFreq==="annually"&&p%m===0) bal-=o.lump;
+    if(o.lumpFreq==="monthly"&&p%monthEvery===0) bal-=o.lump;
+    if(bal<=0){balAtTerm=(balAtTerm===null&&p>=termP)?0:balAtTerm; break;}
+    var intr=bal*i,pr=pay-intr;
+    if(pr<=0) return {years:Infinity,interest:Infinity,year1Int:ti1,interestTerm:tiTerm,balAtTerm:bal,reg:reg,pay:pay,m:m};
+    ti+=intr; if(p<=m) ti1+=intr; if(p<=termP) tiTerm+=intr;
+    if(pr>=bal){bal=0; if(p<=termP) balAtTerm=0; break;}
+    bal-=pr;
+    if(p===termP) balAtTerm=bal;
+  }
+  if(balAtTerm===null) balAtTerm=0; // paid off before term ends
+  return {years:p/m,interest:ti,year1Int:ti1,interestTerm:tiTerm,balAtTerm:balAtTerm,reg:reg,pay:pay,m:m};
+}
+
+/* ---------- UI state ---------- */
+var S={lumpFreq:"now",cap:15,incMode:"dollar"};
+function segWire(id,key){
+  document.querySelectorAll("#"+id+" button").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll("#"+id+" button").forEach(function(x){x.classList.remove("on");});
+      b.classList.add("on"); S[key]=b.dataset.v; render();
+    });
+  });
+}
+segWire("lumpFreqSeg","lumpFreq"); segWire("capSeg","cap"); segWire("incModeSeg","incMode");
+["bal","rate","amort","term","freq","lump","inc"].forEach(function(id){
+  document.getElementById(id).addEventListener("input",render);
+});
+document.getElementById("intSel").addEventListener("change",render);
+
+/* ---------- formatters ---------- */
+function money(n){if(!isFinite(n))return "—";return "$"+Math.round(n).toLocaleString("en-CA");}
+function money0(n){if(!isFinite(n))return "—";return "$"+Math.round(n).toLocaleString("en-CA");}
+function yrsTxt(y){if(!isFinite(y))return "—";var Y=Math.floor(y),M=Math.round((y-Y)*12);if(M===12){Y++;M=0;}return Y+"y "+M+"m";}
+
+/* ---------- house (detached two-storey, modelled on the reference photo) ---------- */
+var GROUND=360, TOP=72, BUILD=GROUND-TOP;
+// silhouette parts (used as clip + grey outline):
+// two-storey main block, a forward render gable on the right, a hipped roof on the left,
+// and a front-projecting single garage with its own pitch.
+var PARTS=[
+  '<polygon points="150,152 215,102 305,102 365,152"/>',   // left hipped roof
+  '<polygon points="348,152 415,72 482,152"/>',            // right projecting gable roof
+  '<rect x="160" y="150" width="320" height="210"/>',      // main two-storey walls
+  '<polygon points="58,238 131,186 204,238"/>',            // garage roof (front-projecting)
+  '<rect x="70" y="238" width="125" height="122"/>',       // single garage
+  '<rect x="58" y="348" width="432" height="14"/>'         // foundation
+];
+function buildHouse(coral,blue,green,amber){
+  // fractions are of original balance (0..1), already clamped & summed <=1
+  var y0=GROUND;
+  var y1=GROUND-coral*BUILD;
+  var y2=y1-blue*BUILD;
+  var y3=y2-green*BUILD;
+  var y4=y3-amber*BUILD;
+  function band(yTop,yBot,col){
+    if(yBot-yTop<=0.2) return "";
+    return '<rect x="40" y="'+yTop+'" width="500" height="'+(yBot-yTop)+'" fill="'+col+'"/>';
+  }
+  var fillRects=
+    band(y1,y0,"var(--eq1)")+
+    band(y2,y1,"var(--eq2)")+
+    band(y3,y2,"var(--eq3)")+
+    band(y4,y3,"var(--eq4)");
+  var clip='<clipPath id="hc">'+PARTS.join("")+'</clipPath>';
+  var greyOutline=PARTS.map(function(p){
+    return p.replace("/>",' fill="#fff" stroke="var(--grey)" stroke-width="2.5"/>');
+  }).join("");
+  // ---- structural detail (drawn on top of the fill) ----
+  var LN='stroke="rgba(15,27,45,.22)" stroke-width="1.6" fill="none"';
+  var TILE='stroke="rgba(15,27,45,.14)" stroke-width="1.3"';
+  var winS='fill="rgba(255,255,255,.5)" stroke="rgba(15,27,45,.32)" stroke-width="2"';
+  function W(x,y,w,h){ // framed window with mullions + sill
+    return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" '+winS+'/>'+
+      '<line x1="'+(x+w/2)+'" y1="'+y+'" x2="'+(x+w/2)+'" y2="'+(y+h)+'" '+LN+'/>'+
+      '<line x1="'+x+'" y1="'+(y+h/2)+'" x2="'+(x+w)+'" y2="'+(y+h/2)+'" '+LN+'/>'+
+      '<rect x="'+(x-3)+'" y="'+(y+h)+'" width="'+(w+6)+'" height="3.5" fill="rgba(15,27,45,.16)"/>';
+  }
+  var detail=
+    // roof fascia lines (eaves)
+    '<polyline points="150,152 215,102 305,102 365,152" '+LN+'/>'+
+    '<polyline points="348,152 415,72 482,152" '+LN+'/>'+
+    '<polyline points="58,238 131,186 204,238" '+LN+'/>'+
+    // roof tile courses
+    '<line x1="172" y1="135" x2="343" y2="135" '+TILE+'/>'+
+    '<line x1="186" y1="119" x2="333" y2="119" '+TILE+'/>'+
+    '<line x1="372" y1="118" x2="458" y2="118" '+TILE+'/>'+
+    '<line x1="390" y1="98" x2="440" y2="98" '+TILE+'/>'+
+    '<line x1="78" y1="222" x2="184" y2="222" '+TILE+'/>'+
+    '<line x1="92" y1="206" x2="170" y2="206" '+TILE+'/>'+
+    // storey divider on main block + vertical line separating brick wing from render gable
+    '<line x1="160" y1="236" x2="480" y2="236" '+LN+'/>'+
+    '<line x1="348" y1="152" x2="348" y2="348" '+LN+'/>'+
+    // upper-storey windows: left pair + middle + gable
+    W(176,168,52,40)+ W(250,168,52,40)+ W(312,168,46,40)+ W(392,110,46,40)+
+    // ground-floor: tall window left of door, wide tri-pane bay right of door
+    W(372,278,30,52)+ W(410,278,30,52)+ W(448,278,30,52)+
+    // garage door (sectional, white)
+    '<rect x="88" y="258" width="100" height="90" fill="rgba(255,255,255,.62)" stroke="rgba(15,27,45,.3)" stroke-width="2"/>'+
+    '<line x1="88" y1="280" x2="188" y2="280" '+TILE+'/>'+
+    '<line x1="88" y1="302" x2="188" y2="302" '+TILE+'/>'+
+    '<line x1="88" y1="324" x2="188" y2="324" '+TILE+'/>'+
+    '<line x1="113" y1="258" x2="113" y2="348" '+TILE+'/>'+
+    '<line x1="138" y1="258" x2="138" y2="348" '+TILE+'/>'+
+    '<line x1="163" y1="258" x2="163" y2="348" '+TILE+'/>'+
+    // door canopy + red front door + knob + step
+    '<rect x="206" y="272" width="60" height="8" fill="rgba(15,27,45,.22)"/>'+
+    '<rect x="214" y="280" width="44" height="68" fill="#FA6E4F" stroke="rgba(15,27,45,.28)" stroke-width="2"/>'+
+    '<line x1="236" y1="280" x2="236" y2="348" stroke="rgba(15,27,45,.18)" stroke-width="1.4"/>'+
+    '<circle cx="250" cy="316" r="2.8" fill="#F2CF59"/>'+
+    '<rect x="208" y="346" width="56" height="6" fill="rgba(15,27,45,.16)"/>';
+  document.getElementById("house").innerHTML=
+    '<defs>'+clip+'</defs>'+
+    greyOutline+
+    '<g clip-path="url(#hc)">'+fillRects+'</g>'+
+    greyOutline.replace(/fill="#fff"/g,'fill="none"')+
+    detail;
+}
+
+/* ---------- render ---------- */
+function render(){
+  var o={
+    bal:+document.getElementById("bal").value||0,
+    rate:(+document.getElementById("rate").value||0)/100,
+    amort:+document.getElementById("amort").value||1,
+    term:+document.getElementById("term").value||1,
+    freq:document.getElementById("freq").value,
+    lump:+document.getElementById("lump").value||0,
+    lumpFreq:S.lumpFreq,
+    incMode:S.incMode,
+    incVal:+document.getElementById("inc").value||0
+  };
+  var base = sim({bal:o.bal,rate:o.rate,amort:o.amort,term:o.term,freq:"monthly",lump:0,lumpFreq:"now",incMode:"dollar",incVal:0});
+  var sR   = sim({bal:o.bal,rate:o.rate,amort:o.amort,term:o.term,freq:o.freq,lump:0,lumpFreq:"now",incMode:"dollar",incVal:0});
+  var sI   = sim({bal:o.bal,rate:o.rate,amort:o.amort,term:o.term,freq:o.freq,lump:0,lumpFreq:"now",incMode:o.incMode,incVal:o.incVal});
+  var plan = sim(o);
+
+  // equity by end of term, split by lever (sequential attribution), as fraction of original balance
+  function eq(s){return Math.max(0,(o.bal - s.balAtTerm)/o.bal);}
+  var eBase=eq(base), eR=eq(sR), eI=eq(sI), eF=eq(plan);
+  var c1=Math.max(0,eBase), c2=Math.max(0,eR-eBase), c3=Math.max(0,eI-eR), c4=Math.max(0,eF-eI);
+  var total=c1+c2+c3+c4;
+  if(total>1){var k=1/total;c1*=k;c2*=k;c3*=k;c4*=k;total=1;}
+  buildHouse(c1,c2,c3,c4);
+
+  var now=new Date().getFullYear();
+  document.getElementById("ownPct").textContent=Math.round(total*100)+"%";
+  document.getElementById("ownYear").textContent=now+o.term;
+
+  document.getElementById("payoffYear").textContent=isFinite(plan.years)?(now+Math.ceil(plan.years)):"—";
+  document.getElementById("payoffIn").textContent=isFinite(plan.years)?("in "+yrsTxt(plan.years)):"never at this payment";
+
+  var saved=(isFinite(plan.years)&&isFinite(base.years))?Math.max(0,base.years-plan.years):0;
+  document.getElementById("timeSaved").textContent=(saved>0.04?"↑ ":"")+(isFinite(plan.years)&&isFinite(base.years)?yrsTxt(saved):"—");
+  var savedY1=Math.max(0,base.year1Int-plan.year1Int);
+  var savedTerm=Math.max(0,base.interestTerm-plan.interestTerm);
+  var savedLife=Math.max(0,base.interest-plan.interest);
+  var isel=document.getElementById("intSel").value;
+  document.getElementById("intSaved").textContent=money(isel==="year1"?savedY1:(isel==="term"?savedTerm:savedLife));
+  document.getElementById("totInt").textContent=money(plan.interest);
+
+  var abbr={monthly:"Mthly",semimonthly:"Semi-mthly",biweekly:"Bi-wkly",weekly:"Wkly",accelbi:"Accel bi-wkly",accelwk:"Accel wkly"}[o.freq]||"Mthly";
+  document.getElementById("oRegFreq").textContent="("+abbr+")";
+  document.getElementById("oReg").textContent=money(plan.reg);
+  document.getElementById("oTerm").textContent=money(plan.balAtTerm);
+
+  // merged timeline: full bar = baseline length; plan segment + "time saved" tail
+  var planPct = (isFinite(plan.years)&&base.years>0) ? Math.min(100, plan.years/base.years*100) : 100;
+  var savedPct = Math.max(0, 100-planPct);
+  document.getElementById("planSeg").style.width=planPct+"%";
+  document.getElementById("savedSeg").style.width=savedPct+"%";
+  document.getElementById("planSeg").textContent = planPct>26 ? ("mortgage-free in "+yrsTxt(plan.years)) : "";
+  document.getElementById("savedSeg").textContent = savedPct>14 ? "saved" : "";
+  var tip=document.getElementById("tlTip");
+  tip.textContent = saved>0.04 ? (yrsTxt(saved)+" sooner than plain monthly") : "same as plain monthly — add a lever to save time";
+  tip.style.left = Math.min(92,Math.max(8, planPct + savedPct/2))+"%";
+  document.getElementById("planYrs").textContent="mortgage-free in "+yrsTxt(plan.years);
+  document.getElementById("baseEndLbl").textContent="baseline: "+yrsTxt(base.years);
+
+  // privilege cap
+  var capBase=o.bal*(+S.cap)/100;
+  var lumpUsed=o.lump*(o.lumpFreq==="monthly"?12:1);
+  var capWarn=document.getElementById("capWarn");
+  if(o.lump>0 && lumpUsed>capBase){
+    capWarn.textContent="Annual lump ("+money(lumpUsed)+") exceeds your "+S.cap+"% privilege ("+money(capBase)+"). May incur a penalty.";
+    capWarn.classList.add("show");
+  } else capWarn.classList.remove("show");
+
+  // payment-increase meter (% of regular payment)
+  var incDollar=o.incMode==="dollar"?o.incVal:plan.reg*o.incVal/100;
+  var incPct=plan.reg>0?incDollar/plan.reg*100:0;
+  document.getElementById("incMeter").style.width=Math.min(100,incPct)+"%";
+  document.getElementById("incWarn").classList.toggle("show",incPct>100);
+}
+render();
+</script>
+</body>
+</html>
