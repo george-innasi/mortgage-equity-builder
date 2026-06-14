@@ -26,9 +26,13 @@
     background:linear-gradient(165deg,#000000 0%,#0d1014 55%,#000000 100%);background-attachment:fixed;min-height:100vh;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     line-height:1.45;-webkit-font-smoothing:antialiased;padding:28px 18px 60px}
-  .wrap{max-width:1080px;margin:0 auto}
+  .wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column}
   h1{font-size:25px;margin:0 0 2px;letter-spacing:-.02em;color:var(--heading);font-weight:800}
   .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+  /* enter mortgage details first, then the visual + overview */
+  .grid{order:1;margin-bottom:18px}
+  .topgrid{order:2}
+  .note{order:3}
   .topgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
   @media(max-width:860px){.topgrid{grid-template-columns:1fr}}
   .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
@@ -161,12 +165,12 @@
     <div class="card">
       <h2>Your mortgage details</h2>
       <div class="row">
-        <div class="field"><label>Mortgage balance ($)</label><input type="number" id="bal" value="450000" min="0" step="1000"></div>
-        <div class="field"><label>Interest rate (%)</label><input type="number" id="rate" value="4.84" min="0" step="0.01"></div>
+        <div class="field"><label>Mortgage balance ($)</label><input type="number" id="bal" placeholder="e.g. 450,000" min="0" step="1000"></div>
+        <div class="field"><label>Interest rate (%)</label><input type="number" id="rate" placeholder="e.g. 4.84" min="0" step="0.01"></div>
       </div>
       <div class="row">
-        <div class="field"><label>Amortization (years)</label><input type="number" id="amort" value="25" min="1" step="1"></div>
-        <div class="field"><label>Term (years)</label><input type="number" id="term" value="5" min="1" step="1"></div>
+        <div class="field"><label>Amortization (years)</label><input type="number" id="amort" placeholder="e.g. 25" min="1" step="1"></div>
+        <div class="field"><label>Term (years)</label><input type="number" id="term" placeholder="e.g. 5" min="1" step="1"></div>
       </div>
       <div class="field"><label><i class="fdot" style="background:var(--eq2)"></i>Payment frequency <span style="color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0">· accelerated = rapid payments</span></label>
         <select id="freq">
@@ -186,7 +190,7 @@
     <div class="card">
       <h2>Prepayment levers</h2>
 
-      <div class="field"><label><i class="fdot" style="background:var(--eq4)"></i>Lump-sum prepayment ($)</label><input type="number" id="lump" value="0" min="0" step="500"></div>
+      <div class="field"><label><i class="fdot" style="background:var(--eq4)"></i>Lump-sum prepayment ($)</label><input type="number" id="lump" placeholder="0 (optional)" min="0" step="500"></div>
       <div class="field"><label>Lump frequency</label>
         <div class="seg" id="lumpFreqSeg">
           <button data-v="now" class="on">Now (once)</button>
@@ -205,7 +209,7 @@
 
       <div class="field" style="margin-top:18px"><label><i class="fdot" style="background:var(--eq3)"></i>Increase each payment</label>
         <div class="row">
-          <input type="number" id="inc" value="0" min="0" step="25">
+          <input type="number" id="inc" placeholder="0 (optional)" min="0" step="25">
           <div class="seg" id="incModeSeg">
             <button data-v="dollar" class="on">$</button>
             <button data-v="pct">%</button>
@@ -376,6 +380,34 @@ function render(){
     incMode:S.incMode,
     incVal:+document.getElementById("inc").value||0
   };
+  // wait for the four core details before computing
+  var ready = o.bal>0 && o.rate>0
+    && (+document.getElementById("amort").value)>=1
+    && (+document.getElementById("term").value)>=1;
+  if(!ready){
+    buildHouse(0,0,0,0);
+    var d="—";
+    document.getElementById("ownPct").textContent="0%";
+    document.getElementById("ownYear").textContent=d;
+    document.getElementById("payoffYear").textContent=d;
+    document.getElementById("payoffIn").textContent="enter your mortgage details";
+    document.getElementById("timeSaved").textContent=d;
+    document.getElementById("intSaved").textContent=d;
+    document.getElementById("totInt").textContent=d;
+    document.getElementById("oReg").textContent=d;
+    document.getElementById("oTerm").textContent=d;
+    document.getElementById("planSeg").style.width="0%";
+    document.getElementById("savedSeg").style.width="0%";
+    document.getElementById("planSeg").textContent="";
+    document.getElementById("savedSeg").textContent="";
+    document.getElementById("planYrs").textContent=d;
+    document.getElementById("baseEndLbl").textContent="";
+    document.getElementById("tlTip").textContent="";
+    document.getElementById("capWarn").classList.remove("show");
+    document.getElementById("incMeter").style.width="0%";
+    document.getElementById("incWarn").classList.remove("show");
+    return;
+  }
   var base = sim({bal:o.bal,rate:o.rate,amort:o.amort,term:o.term,freq:"monthly",lump:0,lumpFreq:"now",incMode:"dollar",incVal:0});
   var sR   = sim({bal:o.bal,rate:o.rate,amort:o.amort,term:o.term,freq:o.freq,lump:0,lumpFreq:"now",incMode:"dollar",incVal:0});
   var sI   = sim({bal:o.bal,rate:o.rate,amort:o.amort,term:o.term,freq:o.freq,lump:0,lumpFreq:"now",incMode:o.incMode,incVal:o.incVal});
