@@ -13,6 +13,9 @@
     --bg:#f2f4f7; --card:#ffffff; --ink:#1f2933; --heading:#111827; --muted:#5f6b76; --line:#e1e5ea;
     --accent:#4a5a66; --accent-soft:#e3e8ec;
     --mode:#2f6db5; --mode-soft:#e8f0fa;
+    --plan:#C98A12; --plan-ink:#7A4E06; --basebar:#cdd3da;
+    --planbar:#A86E0A; --plan-on:#ffffff;
+    --time:#0E7C8B; --time-bg:#e3f3f5; --time-line:#b5dfe5; --timebar:#0E8A99; --time-on:#ffffff;
     /* pastel palette (from theme) */
     --peach:#F8CA9D; --teal:#8EC9BB; --sage:#C5D7C0; --coral:#FB8E7E; --yellow:#F2CF59; --orange:#FA6E4F;
     --grey:#cfd6cf;
@@ -30,6 +33,9 @@
     --bg:#1c2027; --card:#15181c; --ink:#e7eaed; --heading:#ffffff; --muted:#99a2ab; --line:#2b3038;
     --accent:#5b6b76; --accent-soft:#232a31;
     --mode:#5aa0f2; --mode-soft:#16243a;
+    --plan:#E0A63A; --plan-ink:#F1C46B; --basebar:#3a4149;
+    --planbar:#E0A63A; --plan-on:#2a1c00;
+    --time:#5cc8d6; --time-bg:#0f272b; --time-line:#1f4a50; --timebar:#4FC3D1; --time-on:#062a2e;
     --pos:#48c98e; --pos-bg:#15291f; --pos-line:#2d4838;
     --cost:#ff7d63; --cost-bg:#2c1713; --cost-line:#4d2a22;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.45);
@@ -65,7 +71,8 @@
   .mode.own.on{background:#2f6db5;color:#fff}
   .mode:focus-visible,.clearBtn:focus-visible,.themeBtn:focus-visible{outline:2px solid var(--mode);outline-offset:2px}
   /* card header with a pill or action */
-  .cardhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+  .cardhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .clearBtn{white-space:nowrap}
   .cardhead h2{margin:0}
   .pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
   .pill.own{background:var(--mode-soft);color:var(--mode)}
@@ -148,6 +155,59 @@
     border:5px solid transparent;border-top-color:#2b3138}
   .track2:hover + .tlTip{opacity:1}
   .tlScale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:5px}
+  /* overview card */
+  .ovHero{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:16px}
+  .ovHero .bigYear{margin:0}
+  .ovHero .in{font-size:15px;color:var(--muted);font-weight:500;letter-spacing:0}
+  .soonPill{font-size:12px;font-weight:700;padding:5px 11px;border-radius:99px;white-space:nowrap;
+    background:var(--pos-bg);color:var(--pos);border:1px solid var(--pos-line)}
+  .soonPill:empty{display:none}
+  .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  @media(max-width:520px){.kpis{grid-template-columns:1fr}}
+  .kpi{display:flex;flex-direction:column;gap:3px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line);min-width:0}
+  .kpi.pos{background:var(--pos-bg);border-color:var(--pos-line)}
+  .kpi.time{background:var(--time-bg);border-color:var(--time-line)}
+  .kpi.time .k,.kpi.time .v{color:var(--time)}
+  .kpi .k{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpi.pos .k{color:var(--pos)}
+  .kpi .v{font-size:21px;font-weight:800;color:var(--heading);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .kpi.pos .v{color:var(--pos)}
+  .kpi .s{font-size:11.5px;color:var(--muted);min-height:16px}
+  .kpi .s .ministat{width:auto;font-size:11.5px;font-weight:600;color:var(--pos);cursor:pointer;
+    padding:3px 24px 3px 9px;border:1px solid var(--pos-line);border-radius:7px;background-color:var(--card);background-position:right 8px center}
+  .kpi .s .ministat:hover,.kpi .s .ministat:focus{border-color:var(--pos);text-decoration:none}
+  .kpi .s.cost{color:var(--cost);font-weight:600}
+  /* merged mortgage-free timeline */
+  .tl{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+  .tlHead{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .tlHead b{color:var(--ink);font-weight:700}
+  .tlBar{position:relative;display:flex;height:32px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+  .tlPlan{height:100%;background:var(--planbar);color:var(--plan-on);border-radius:99px 0 0 99px;display:flex;align-items:center;
+    padding:0 22px 0 14px;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;transition:width .35s ease}
+  .tlSaved{height:100%;color:var(--time-on);border-radius:0 99px 99px 0;display:flex;align-items:center;justify-content:center;padding:0 8px 0 18px;
+    font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;transition:width .35s ease;
+    background:repeating-linear-gradient(45deg,var(--timebar) 0 7px,color-mix(in srgb,var(--timebar) 82%,#fff) 7px 14px)}
+  .tlPlan.full{border-radius:99px}
+  .tlKey{position:absolute;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:var(--card);
+    border:2px solid var(--planbar);display:flex;align-items:center;justify-content:center;color:var(--planbar);transition:left .35s ease}
+  .tlKey[hidden]{display:none}
+  @media(max-width:520px){
+    .tlBar{height:28px}
+    .tlPlan{padding:0 14px 0 12px;font-size:11.5px}
+    .tlSaved{padding:0 3px 0 11px;font-size:11px;letter-spacing:-.01em}
+    .tlKey{width:22px;height:22px;margin:-11px 0 0 -11px;border-width:1.5px}
+    .tlKey svg{width:12px;height:12px}
+  }
+  .tlScale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+  .cmp{margin-top:18px;padding-top:6px;border-top:1px solid var(--line)}
+  .cmpRow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12.5px;color:var(--muted);margin:12px 0 6px}
+  .cmpRow.plan{color:var(--plan-ink);font-weight:700}
+  .cmpRow .val{font-variant-numeric:tabular-nums}
+  .bar{height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+  .bar.plan{height:12px}
+  .barFill{height:100%;border-radius:99px;transition:width .35s ease}
+  .barFill.plan{background:var(--plan)}
+  .barFill.base{background:var(--basebar)}
 </style>
 </head>
 <body>
@@ -185,31 +245,32 @@
     <div class="cardhead"><h2>Mortgage overview</h2>
       <button type="button" class="clearBtn" id="clearBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Clear and start fresh</button>
     </div>
-    <p class="headline">Fully owned by</p>
-    <p class="bigYear"><span id="payoffYear">—</span> <span style="font-size:15px;color:var(--muted);font-weight:500">(<span id="payoffIn">—</span>)</span></p>
-    <div class="stats stats3">
-      <div class="stat stat-pos"><div class="k">Time saved</div><div class="v" id="timeSaved">—</div></div>
-      <div class="stat stat-pos">
-        <div class="k">Interest saved <select id="intSel" class="ministat">
-          <option value="year1">year 1</option>
-          <option value="term">over term</option>
-          <option value="life" selected>over life</option>
-        </select></div>
-        <div class="v" id="intSaved">—</div>
+    <div class="ovHero">
+      <div>
+        <p class="headline">Mortgage-free by</p>
+        <p class="bigYear"><span id="payoffYear">—</span> <span class="in" id="payoffIn">—</span></p>
       </div>
-      <div class="stat stat-cost"><div class="k">Total interest Paid (life)</div><div class="v" id="totInt">—</div></div>
     </div>
-    <div class="timeline">
-      <div class="barlbl"><span>Mortgage free timeline</span><span id="planYrs">—</span></div>
-      <div class="tlWrap">
-        <div class="track2">
-          <div class="seg-plan" id="planSeg"></div>
-          <div class="seg-saved" id="savedSeg"></div>
-        </div>
-        <div class="tlTip" id="tlTip">—</div>
+    <div class="kpis">
+      <div class="kpi time"><div class="k">Time saved</div><div class="v" id="timeSaved">—</div><div class="s">vs standard monthly</div></div>
+      <div class="kpi pos"><div class="k">Interest saved</div><div class="v" id="intSaved">—</div>
+        <div class="s"><select id="intSel" class="ministat" aria-label="Interest saved period">
+          <option value="year1">in year 1</option>
+          <option value="term">over the term</option>
+          <option value="life" selected>over the life</option>
+        </select></div></div>
+      <div class="kpi"><div class="k">Interest paid (life)</div><div class="v" id="totInt">—</div><div class="s cost" id="totSub">&nbsp;</div></div>
+    </div>
+    <div class="tl">
+      <div class="tlHead"><span>Mortgage-free timeline</span><span id="planYrs">—</span></div>
+      <div class="tlBar">
+        <div class="tlPlan" id="planSeg" style="width:0%"></div>
+        <div class="tlSaved" id="savedSeg" style="width:0%"></div>
+        <span class="tlKey" id="tlKey" hidden title="Keys to your home"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 20 3"/><path d="M16 7l3 3"/><path d="M18.5 4.5l2 2"/></svg></span>
       </div>
-      <div class="tlScale"><span>now</span><span id="baseEndLbl">baseline payoff</span></div>
+      <div class="tlScale"><span>Today</span><span id="baseEndLbl">—</span></div>
     </div>
+  </div>
   </div>
   </div><!-- /topgrid -->
 
@@ -331,6 +392,7 @@ segWire("lumpFreqSeg","lumpFreq"); segWire("capSeg","cap"); segWire("incModeSeg"
   document.getElementById(id).addEventListener("input",render);
 });
 document.getElementById("intSel").addEventListener("change",render);
+var rzT; window.addEventListener("resize",function(){clearTimeout(rzT);rzT=setTimeout(render,120);});
 
 /* ---------- formatters ---------- */
 function money(n){if(!isFinite(n))return "—";return "$"+Math.round(n).toLocaleString("en-CA");}
@@ -456,9 +518,10 @@ function render(){
     document.getElementById("savedSeg").style.width="0%";
     document.getElementById("planSeg").textContent="";
     document.getElementById("savedSeg").textContent="";
+    document.getElementById("tlKey").hidden=true;
     document.getElementById("planYrs").textContent=d;
-    document.getElementById("baseEndLbl").textContent="";
-    document.getElementById("tlTip").textContent="";
+    document.getElementById("baseEndLbl").textContent=d;
+    document.getElementById("totSub").innerHTML="&nbsp;";
     document.getElementById("capWarn").classList.remove("show");
     document.getElementById("incMeter").style.width="0%";
     document.getElementById("incWarn").classList.remove("show");
@@ -483,31 +546,34 @@ function render(){
 
   document.getElementById("payoffYear").textContent=isFinite(plan.years)?(now+Math.ceil(plan.years)):"—";
   document.getElementById("payoffIn").textContent=isFinite(plan.years)?("in "+yrsTxt(plan.years)):"never at this payment";
+  var baseYear=now+Math.ceil(base.years);
 
   var saved=(isFinite(plan.years)&&isFinite(base.years))?Math.max(0,base.years-plan.years):0;
-  document.getElementById("timeSaved").textContent=(saved>0.04?"↑ ":"")+(isFinite(plan.years)&&isFinite(base.years)?yrsTxt(saved):"—");
+  document.getElementById("timeSaved").textContent=(isFinite(plan.years)&&isFinite(base.years)?yrsTxt(saved):"—");
   var savedY1=Math.max(0,base.year1Int-plan.year1Int);
   var savedTerm=Math.max(0,base.interestTerm-plan.interestTerm);
   var savedLife=Math.max(0,base.interest-plan.interest);
   var isel=document.getElementById("intSel").value;
   document.getElementById("intSaved").textContent=money(isel==="year1"?savedY1:(isel==="term"?savedTerm:savedLife));
   document.getElementById("totInt").textContent=money(plan.interest);
+  document.getElementById("totSub").textContent=(isFinite(base.interest)&&base.interest-plan.interest>1)?("vs "+money(base.interest)+" original"):"\u00a0";
 
   document.getElementById("oReg").textContent=money(plan.reg);
   document.getElementById("oTerm").textContent=money(plan.balAtTerm);
 
-  // merged timeline: full bar = baseline length; plan segment + "time saved" tail
+  // merged timeline: full bar = standard monthly payoff; plan + time saved
   var planPct = (isFinite(plan.years)&&base.years>0) ? Math.min(100, plan.years/base.years*100) : 100;
   var savedPct = Math.max(0, 100-planPct);
-  document.getElementById("planSeg").style.width=planPct+"%";
-  document.getElementById("savedSeg").style.width=savedPct+"%";
-  document.getElementById("planSeg").textContent = planPct>26 ? ("mortgage-free in "+yrsTxt(plan.years)) : "";
-  document.getElementById("savedSeg").textContent = savedPct>14 ? "saved" : "";
-  var tip=document.getElementById("tlTip");
-  tip.textContent = saved>0.04 ? (yrsTxt(saved)+" sooner than plain monthly") : "same as plain monthly — add a lever to save time";
-  tip.style.left = Math.min(92,Math.max(8, planPct + savedPct/2))+"%";
-  document.getElementById("planYrs").textContent="mortgage-free in "+yrsTxt(plan.years);
-  document.getElementById("baseEndLbl").textContent="baseline: "+yrsTxt(base.years);
+  var pSeg=document.getElementById("planSeg"), sSeg=document.getElementById("savedSeg"), key=document.getElementById("tlKey");
+  pSeg.style.width=planPct+"%"; sSeg.style.width=savedPct+"%";
+  pSeg.classList.toggle("full", savedPct<0.5);
+  pSeg.textContent = planPct>40 ? ("Mortgage-free in "+yrsTxt(plan.years)) : "";
+  var savedPx = document.querySelector(".tlBar").clientWidth*savedPct/100;
+  sSeg.textContent = (savedPx>40 && saved>0.04) ? yrsTxt(saved) : "";
+  key.hidden = !(isFinite(plan.years) && savedPct>=0.5);
+  key.style.left = planPct+"%";
+  document.getElementById("planYrs").innerHTML = isFinite(plan.years) ? ("Keys in <b>"+(now+Math.ceil(plan.years))+"</b>") : "—";
+  document.getElementById("baseEndLbl").textContent = "Standard monthly: "+baseYear;
 
   // privilege cap
   var capBase=o.bal*(+S.cap)/100;
